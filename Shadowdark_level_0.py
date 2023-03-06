@@ -1,5 +1,6 @@
 import random
 import os
+import math
 
 
 class Character:
@@ -11,7 +12,7 @@ class Character:
             modifier_cutoff = 10
             modifier_divisor = 2
             self.value = sum([random.randint(die_min, die_max) for roll in range(die_count)])
-            self.modifier = (round((self.value - modifier_cutoff) / modifier_divisor))
+            self.modifier = math.floor((self.value - modifier_cutoff) / modifier_divisor)
 
     _ancestries = {
         'Dwarf': 'Stout. Start with +2 HP (Included). Roll your hit point gains with advantage.',
