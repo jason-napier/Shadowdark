@@ -39,7 +39,7 @@ class Character:
         bonus_hp = {'dwarf': 2}
         gold_die_min = 1
         gold_die_max = 6
-        gold_die_count = 3
+        gold_die_count = 2
         gold_modifier = 5
 
         self.name = character_name
