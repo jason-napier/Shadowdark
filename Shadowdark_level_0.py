@@ -31,7 +31,23 @@ class Character:
 
     _alignment_list = ['Lawful', 'Neutral', 'Chaotic']
 
-    def __init__(self, character_name):
+    _names = {
+        'dwarf': ['Hilde', 'Torbin', 'Marga', 'Bruno', 'Karina', 'Naugrim', 'Brenna', 'Darvin', 'Elga', 'Alric',
+                  'Isolde', 'Gendry', 'Bruga', 'Junnor', 'Vidrid', 'Torson', 'Brielle', 'Ulfgar', 'Sarna', 'Grimm'],
+        'elf': ['Eliara', 'Ryarn', 'Sariel', 'Tirolas', 'Galira', 'Varos', 'Daeniel', 'Axidor', 'Hiralia', 'Cyrwin',
+                'Lothiel', 'Zaphiel', 'Nayra', 'Ithior', 'Amriel', 'Elyon', 'Jirwyn', 'Natinel', 'Fiora', 'Ruhiel'],
+        'goblin': ['Iggs', 'Tark', 'Nix', 'Lenk', 'Roke', 'Fitz', 'Tila', 'Riggs', 'Prim', 'Zeb', 'Finn', 'Borg',
+                   'Yark', 'Deeg', 'Nibs', 'Brak', 'Fink', 'Rizzo', 'Squib', 'Grix'],
+        'hafling': ['Willow', 'Benny', 'Annie', 'Tucker', 'Marie', 'Hobb', 'Cora', 'Gordie', 'Rose', 'Ardo', 'Alma',
+                    'Norbert', 'Jennie', 'Barvin', 'Tilly', 'Pike', 'Lydia', 'Marlow', 'Astrid', 'Jasper'],
+        'half-orc': ['Vara', 'Gralk', 'Ranna', 'Korv', 'Zasha', 'Hrogar', 'Klara', 'Tragan', 'Brolga', 'Drago',
+                     'Yelena', 'Krull', 'Ulara', 'Tulk', 'Shiraal', 'Wulf', 'Ivara', 'Hirok', 'Aja', 'Zoraan'],
+        'human': ['Zali', 'Bram', 'Clara', 'Nattias', 'Rina', 'Denton', 'Mirena', 'Aran', 'Morgan', 'Giralt', 'Tamra',
+                  'Oscar', 'Ishana', 'Rogar', 'Jasmin', 'Tarin', 'Yuri', 'Malchor', 'Lienna', 'Godfrey']
+
+    }
+
+    def __init__(self, character_name=None):
         min_hp = 1
         base_ac = 10
         hp_modifying_stat = 'CON'
@@ -42,7 +58,6 @@ class Character:
         gold_die_count = 2
         gold_modifier = 5
 
-        self.name = character_name
         self.ancestry = random.choice(list(Character._ancestries.keys()))
         self.ancestry_talent = Character._ancestries[self.ancestry]
         self.alignment = random.choice(Character._alignment_list)
@@ -55,6 +70,7 @@ class Character:
         if self.ancestry.lower() in bonus_hp:
             self.hp += bonus_hp[self.ancestry.lower()]
         self.ac = base_ac + self.stats[ac_modifying_stat].modifier
+        self.name = character_name if character_name else random.choice(list(Character._names[self.ancestry.lower()]))
         self.save_to_file()
 
     def save_to_file(self):
@@ -82,5 +98,5 @@ class Character:
 
 
 # Prompt the user for their character's name
-name = input("What is your character's name? ")
+name = input("What is your character's name? (leave blank for a random name) ")
 char = Character(name)
