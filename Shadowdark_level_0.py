@@ -1,74 +1,85 @@
 import random
-import math
-
-#Chose Background
-Background = random.choice(['Urchin', 'Wanted', 'Cult Initiate', "Thieves' Guild", 'Banished', 'Orphaned', "Wizard's Apprentice", 'Jeweler', 'Herbalist', 'Barbarian', 'Mercenary', 'Sailor', 'Acolyte', 'Soldier', 'Ranger', 'Scout', 'Minstrel', 'Scholar', 'Noble', 'Chirurgeon'])
-
-def roll_stat_or_gold(is_gold = False):
-    if is_gold == True:
-        gold_multiplier = 5
-    else:
-        gold_multiplier = 1
-    return sum([random.randint(1,6) for i in range(3)]) * gold_multiplier
-
-def get_stat_mod(stat):
-    return math.floor((stat-10)/2)
+import os
 
 
-#Roll Stats
-STR = roll_stat_or_gold()
-DEX = roll_stat_or_gold()
-CON = roll_stat_or_gold()
-INT = roll_stat_or_gold()
-WIS = roll_stat_or_gold()
-CHA = roll_stat_or_gold()
+class Character:
+    class Stat:
+        def __init__(self):
+            die_min = 1
+            die_max = 6
+            die_count = 3
+            modifier_cutoff = 10
+            modifier_divisor = 2
+            self.value = sum([random.randint(die_min, die_max) for roll in range(die_count)])
+            self.modifier = (round((self.value - modifier_cutoff) / modifier_divisor))
 
-Ancestry = random.choice([
-    {'name': 'Dwarf', 'talent': 'Stout. Start with +2 HP (Included). Roll your hit point gains with advantage.'},
-    {'name': 'Elf', 'talent': 'Farsight. You get a +1 bonus to attack rolls with ranged weapons or a +1 bonus to spellcasting checks.'},
-    {'name': 'Half-Orc', 'talent': 'Mighty. You have a +1 bonus to attack and damage rolls with melee weapons.'},
-    {'name': 'Halfling', 'talent': 'Stealthy. Once per day, you can become invisible for 3 rounds.'},
-    {'name': 'Goblin', 'talent': 'Keen Senses. You cannot be surprised.'},
-    {'name': 'Human', 'talent': 'Ambitious. You gain one additional talent roll at 1st level.'}
-])
+    _ancestries = {
+        'Dwarf': 'Stout. Start with +2 HP (Included). Roll your hit point gains with advantage.',
+        'Elf': 'Farsight. You get a +1 bonus to attack rolls with ranged weapons or a +1 bonus to spellcasting checks.',
+        'Half-Orc': 'Mighty. You have a +1 bonus to attack and damage rolls with melee weapons.',
+        'Halfling': 'Stealthy. Once per day, you can become invisible for 3 rounds.',
+        'Goblin': 'Keen Senses. You cannot be surprised.',
+        'Human': 'Ambitious. You gain one additional talent roll at 1st level.'
+    }
 
-#Get HP
-if get_stat_mod(CON) > 0:
-    HP = get_stat_mod(CON)
-else:
-    HP = 1
+    _background_list = ['Urchin', 'Wanted', 'Cult Initiate', "Thieves' Guild", 'Banished', 'Orphaned',
+                        "Wizard's Apprentice", 'Jeweler', 'Herbalist', 'Barbarian', 'Mercenary', 'Sailor', 'Acolyte',
+                        'Soldier', 'Ranger', 'Scout', 'Minstrel', 'Scholar', 'Noble', 'Chirurgeon']
 
-if Ancestry["name"] == "Dwarf":
-    HP += 2
+    _stats = ['str', 'dex', 'con', 'int', 'wis', 'cha']
 
-#Get Alignment
-Alignment = random.choice(['Lawful', 'Neutral', 'Chaotic'])
+    _alignment_list = ['Lawful', 'Neutral', 'Chaotic']
 
-#Get Gold/Gear
-Gold = roll_stat_or_gold(True)
+    def __init__(self, character_name):
+        min_hp = 1
+        base_ac = 10
+        hp_modifying_stat = 'CON'
+        ac_modifying_stat = 'DEX'
+        bonus_hp = {'dwarf': 2}
+        gold_die_min = 1
+        gold_die_max = 6
+        gold_die_count = 3
+        gold_modifier = 5
+
+        self.name = character_name
+        self.ancestry = random.choice(list(Character._ancestries.keys()))
+        self.ancestry_talent = Character._ancestries[self.ancestry]
+        self.alignment = random.choice(Character._alignment_list)
+        self.background = random.choice(Character._background_list)
+        self.stats = {}
+        for stat in Character._stats:
+            self.stats[stat.upper()] = Character.Stat()
+        self.gold = sum([random.randint(gold_die_min, gold_die_max) for roll in range(gold_die_count)]) * gold_modifier
+        self.hp = max(self.stats[hp_modifying_stat].modifier, min_hp)
+        if self.ancestry.lower() in bonus_hp:
+            self.hp += bonus_hp[self.ancestry.lower()]
+        self.ac = base_ac + self.stats[ac_modifying_stat].modifier
+        self.save_to_file()
+
+    def save_to_file(self):
+        try:
+            dir_path = os.getcwd()
+            filename = self.name + ".txt"
+            full_path = os.path.join(dir_path, filename)
+            with open(full_path, "w") as file:
+                file.write("Name: " + self.name + "\n")
+                file.write("Level: 0\n")
+                file.write(f"Ancestry: {self.ancestry}" + "\n")
+                file.write(f"Alignment: {self.alignment}" + "\n")
+                file.write(f"Background: {self.background}" + "\n")
+                file.write(f"HP: {self.hp}  AC: {self.ac}  \n")
+                for stat_name, stat in self.stats.items():
+                    file.write(
+                        f'{stat_name}: {stat.value} ({"+" if stat.modifier > 0 else ""}{str(stat.modifier)})' + "\n")
+                file.write(f"Ancestry Talent: {self.ancestry_talent}" + "\n")
+                file.write(f"Gold: {self.gold}" + "\n")
+            print("Character information saved to " + filename)
+        except OSError as e:
+            print(f"Something went wrong when trying to save {self.name} to file. Sorry it didn't work out")
+            print(f"Error message:")
+            print(e)
+
 
 # Prompt the user for their character's name
 name = input("What is your character's name? ")
-
-#Create Field
-
-#Open the file for writing and write the variable values
-with open(f"{name}.txt", "w") as file:
-    file.seek
-    file.write("Name: " + name + "\n")
-    file.write("Level: 0\n")
-    file.write("Ancestry: " + Ancestry["name"] + "\n")
-    file.write("Alignment: " + Alignment + "\n")
-    file.write("Background: " + Background + "\n")
-    file.write("HP: " + str(HP) + ", AC:   \n")
-    file.write("STR: " + str(STR) + "(" + str(get_stat_mod(STR)) +")" "\n")
-    file.write("DEX: " + str(DEX) + "(" + str(get_stat_mod(DEX)) +")" "\n")
-    file.write("CON: " + str(CON) + "(" + str(get_stat_mod(CON)) +")" "\n")
-    file.write("INT: " + str(INT) + "(" + str(get_stat_mod(INT)) +")" "\n")
-    file.write("WIS: " + str(WIS) + "(" + str(get_stat_mod(WIS)) +")" "\n")
-    file.write("CHA: " + str(CHA) + "(" + str(get_stat_mod(CHA)) +")" "\n")
-    file.write("Ancestry Talent: " + str(Ancestry["talent"]) + "\n")
-    file.write("Gold: " + str(Gold) + "\n")
-
-#Confirmation message
-print(f"Character information saved to {name}.txt")
+char = Character(name)
